@@ -1,5 +1,3 @@
-import coursierapi.MavenRepository
-
 ThisBuild / organization     := "t-academy"
 ThisBuild / organizationName := "T-Bank"
 ThisBuild / version          := "0.1.0-SNAPSHOT"
@@ -11,7 +9,7 @@ ThisBuild / semanticdbEnabled                             := true
 
 lazy val root = project.in(file("."))
   .settings(
-    name         := "hw2-hangman",
+    name         := "hw2-labirinths",
     scalaVersion := "2.13.16",
     libraryDependencies ++= List(
       "org.typelevel" %% "cats-effect"                   % "3.6.3",
