@@ -1,7 +1,7 @@
 package tbank.academy.scala.labyrinths.generators
 
 import tbank.academy.scala.labyrinths.dto.{CellType, Maze, Point}
-import tbank.academy.scala.labyrinths.error.{DomainError, InvalidMazeSizeError, UnexpectedError}
+import tbank.academy.scala.labyrinths.error.{DomainError, InvalidMazeSizeError}
 
 import scala.annotation.tailrec
 import scala.util.Random
@@ -16,51 +16,29 @@ class DfsGenerator(seed: Int) extends Generator {
       val initMaze = Maze.filledWithWalls(width, height)
       val initPoint = Point(1, 1)
 
-      dfsBuild(initMaze, initPoint)
+      Right(dfsBuild(initMaze, initPoint))
     }
   }
 
-  private def nextCell(maze: Maze, point: Point): Either[DomainError, Boolean] =
-    maze.cell(point) match {
-      case Left(_) =>
-        Left(new UnexpectedError())
-      case Right(value) =>
-        if (
-          value == CellType.Wall
-            && maze.nearbyCells(point).count(ct => ct == CellType.Empty) == 1
-            && maze.isNotBorder(point)
-        )
-          Right(true)
-        else
-          Right(false)
-    }
+  private def dfsBuild(maze: Maze, point: Point): Maze = {
+    val updatedMaze = maze.edit(point, CellType.Empty)
 
-  private def dfsBuild(maze: Maze, point: Point): Either[DomainError, Maze] = {
-    iterateNextCells(maze.edit(point, CellType.Empty), point)
+    iterateNearbyWalls(updatedMaze, point)
   }
 
   @tailrec
-  private def iterateNextCells(maze: Maze, point: Point): Either[DomainError, Maze] = {
-    val nextCells = maze
+  private def iterateNearbyWalls(maze: Maze, point: Point): Maze = {
+    val nearbyWalls = maze
       .nearby(point)
-      .filter(
-        cell => nextCell(maze, cell) match {
-          case Left(_) => false
-          case Right(value) => value
-        }
-      )
+      .filter(p => maze.cell(p) == Right(CellType.Wall))
+      .filter(maze.isNotBorder)
+      .filter(p => maze.nearbyCells(p).count(cellType => cellType == CellType.Empty) == 1)
 
-    if (nextCells.isEmpty)
-      Right(maze)
-    else
-      random.shuffle(nextCells).headOption match {
-        case None => Left(new UnexpectedError())
-        case Some(nextPoint) =>
-          dfsBuild(maze, nextPoint) match {
-            case Left(error) => Left(error)
-            case Right(postDfsMaze) =>
-              iterateNextCells(postDfsMaze, point)
-          }
-      }
+    random.shuffle(nearbyWalls).headOption match {
+      case None => maze
+      case Some(nextPoint) =>
+        val postDfsMaze = dfsBuild(maze, nextPoint)
+        iterateNearbyWalls(postDfsMaze, point)
+    }
   }
 }

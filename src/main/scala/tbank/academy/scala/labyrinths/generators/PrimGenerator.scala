@@ -27,10 +27,10 @@ class PrimGenerator(seed: Int) extends Generator {
     val appendingWalls = updatedMaze
       .nearby(point)
       .filter(p => updatedMaze.cell(p) == Right(CellType.Wall))
-      .filterNot(p => updatedMaze.isBorder(p))
-      .filterNot(p => wallsStack.contains(p))
+      .filterNot(updatedMaze.isBorder)
+      .filterNot(wallsStack.contains)
     val updatedWallsStack = wallsStack
-      .filterNot(p => p == point)
+      .filterNot(point.equals)
       .appendedAll(appendingWalls)
 
     iterateWallChoose(updatedMaze, point, updatedWallsStack)

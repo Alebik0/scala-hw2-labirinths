@@ -1,7 +1,7 @@
 package tbank.academy.scala.labyrinths
 
 import cats.effect.{ExitCode, IO, IOApp}
-import tbank.academy.scala.labyrinths.dto.{CellType, Maze}
+import tbank.academy.scala.labyrinths.dto.Maze
 import tbank.academy.scala.labyrinths.error.{DomainError, HeightNotFoundError, WidthNotFoundError}
 import tbank.academy.scala.labyrinths.generators.{DfsGenerator, Generator, PrimGenerator}
 
@@ -54,23 +54,7 @@ object App extends IOApp {
   }
 
   private def printMaze(maze: Maze): IO[ExitCode] = {
-    println(
-      maze
-        .cells
-        .map(
-          row => row
-            .map {
-              case CellType.Empty => " "
-              case CellType.End => "X"
-              case CellType.Path => "."
-              case CellType.Start => "O"
-              case CellType.Wall => "#"
-              case _ => ""
-            }
-            .mkString
-        )
-        .mkString("\n")
-    )
+    println(maze.toHumanReadableString)
 
     IO(ExitCode.Success)
   }

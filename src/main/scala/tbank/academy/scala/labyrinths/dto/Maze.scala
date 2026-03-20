@@ -64,6 +64,22 @@ case class Maze(cells: Vector[Vector[CellType]]) {
               rowWithIndex._1
         )
     )
+
+  def toHumanReadableString: String =
+    cells
+      .map(
+        row => row
+          .map {
+            case CellType.Empty => " "
+            case CellType.End => "X"
+            case CellType.Path => "."
+            case CellType.Start => "O"
+            case CellType.Wall => "#"
+            case _ => ""
+          }
+          .mkString
+      )
+      .mkString("\n")
 }
 
 object Maze {
