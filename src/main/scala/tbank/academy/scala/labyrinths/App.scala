@@ -3,7 +3,7 @@ package tbank.academy.scala.labyrinths
 import cats.effect.{ExitCode, IO, IOApp}
 import tbank.academy.scala.labyrinths.dto.{CellType, Maze}
 import tbank.academy.scala.labyrinths.error.{DomainError, HeightNotFoundError, WidthNotFoundError}
-import tbank.academy.scala.labyrinths.generators.{DfsGenerator, Generator}
+import tbank.academy.scala.labyrinths.generators.{DfsGenerator, Generator, PrimGenerator}
 
 object App extends IOApp {
   private val DEFAULT_SEED = 123
@@ -113,6 +113,7 @@ object App extends IOApp {
       .flatMap(
         arg => arg.drop(12) match {
           case "dfs" => Some(new DfsGenerator(seed))
+          case "prime" => Some(new PrimGenerator(seed))
           case _ => None
         }
       )
