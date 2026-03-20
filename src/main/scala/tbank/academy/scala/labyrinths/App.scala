@@ -13,7 +13,7 @@ object App extends IOApp {
     if (parseHelp(args)) {
       printHelp()
       IO(ExitCode.Success)
-    } else {
+    } else
       args.headOption match {
         case None =>
           printHelp()
@@ -26,15 +26,15 @@ object App extends IOApp {
           printHelp()
           IO(ExitCode.Error)
       }
-    }
   }
 
   private def runSolve(): IO[ExitCode] = {
+    // TODO
     IO(ExitCode.Success)
   }
 
   private def runGenerate(args: List[String]): IO[ExitCode] = {
-    val seed = parseSeed(args)
+    val seed      = parseSeed(args)
     val generator = parseGenerator(seed, args)
     parseWidth(args) match {
       case Left(error) =>
@@ -69,7 +69,7 @@ object App extends IOApp {
 
     maybeWidth match {
       case Some(width) => Right(width)
-      case None => Left(new WidthNotFoundError())
+      case None        => Left(new WidthNotFoundError())
     }
   }
 
@@ -81,7 +81,7 @@ object App extends IOApp {
 
     maybeHeight match {
       case Some(height) => Right(height)
-      case None => Left(new HeightNotFoundError())
+      case None         => Left(new HeightNotFoundError())
     }
   }
 
@@ -96,16 +96,16 @@ object App extends IOApp {
     args
       .drop(1)
       .findLast(arg => arg.startsWith("--algorithm="))
-      .flatMap(
-        arg => arg.drop(12) match {
-          case "dfs" => Some(new DfsGenerator(seed))
+      .flatMap(arg =>
+        arg.drop(12) match {
+          case "dfs"  => Some(new DfsGenerator(seed))
           case "prim" => Some(new PrimGenerator(seed))
-          case _ => None
+          case _      => None
         }
       )
       .getOrElse(DEFAULT_GENERATOR(seed))
 
-  private def printHelp(): Unit = {
+  private def printHelp(): Unit =
     println(
       """Usage:
         |  <COMMAND> --width=<WIDTH> --height=<HEIGHT> [--algorithm=<ALGORITHM>] [--seed=<SEED>]
@@ -149,5 +149,4 @@ object App extends IOApp {
         |
         |  generate --width 50 --height 20 --algorithm prim --seed 42""".stripMargin
     )
-  }
 }

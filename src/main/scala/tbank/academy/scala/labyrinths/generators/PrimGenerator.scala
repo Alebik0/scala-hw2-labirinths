@@ -13,17 +13,19 @@ class PrimGenerator(seed: Int) extends Generator {
     if (width < 3 || height < 3) {
       Left(new InvalidMazeSizeError())
     } else {
-      val initMaze = Maze.filledWithWalls(width, height)
+      val initMaze  = Maze.filledWithWalls(width, height)
       val initPoint = Point(1, 1)
 
       Right(primBuild(initMaze, initPoint))
     }
   }
 
-  private def primBuild(maze: Maze,
-                        point: Point,
-                        wallsStack: List[Point] = List()): Maze = {
-    val updatedMaze = maze.edit(point, CellType.Empty)
+  private def primBuild(
+      maze: Maze,
+      point: Point,
+      wallsStack: List[Point] = List()
+  ): Maze = {
+    val updatedMaze    = maze.edit(point, CellType.Empty)
     val appendingWalls = updatedMaze
       .nearby(point)
       .filter(p => updatedMaze.cell(p) == Right(CellType.Wall))
@@ -37,13 +39,15 @@ class PrimGenerator(seed: Int) extends Generator {
   }
 
   @tailrec
-  private def iterateWallChoose(maze: Maze,
-                                point: Point,
-                                wallStack: List[Point]): Maze = {
+  private def iterateWallChoose(
+      maze: Maze,
+      point: Point,
+      wallStack: List[Point]
+  ): Maze = {
     if (wallStack.isEmpty)
       maze
     else {
-      val chosenWall = wallStack(random.nextInt(wallStack.length))
+      val chosenWall       = wallStack(random.nextInt(wallStack.length))
       val nearbyEmptyCount = maze
         .nearbyCells(chosenWall)
         .count(cellType => cellType == CellType.Empty)

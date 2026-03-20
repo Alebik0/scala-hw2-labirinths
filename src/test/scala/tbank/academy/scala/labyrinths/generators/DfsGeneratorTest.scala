@@ -7,7 +7,7 @@ import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 class DfsGeneratorTest extends AnyFlatSpec with Matchers {
   it should "Проверка генерации с алгоритмом DFS" in {
     val generator = new DfsGenerator(1234)
-    val result = generator.generate(20, 20)
+    val result    = generator.generate(20, 20)
     result.map(m => m.toHumanReadableString) shouldBe Right(
       """####################
         |#  #  #  ##   #    #
@@ -34,7 +34,7 @@ class DfsGeneratorTest extends AnyFlatSpec with Matchers {
 
   it should "Проверка генерации с алгоритмом Прима" in {
     val generator = new PrimGenerator(1234)
-    val result = generator.generate(20, 20)
+    val result    = generator.generate(20, 20)
     result.map(m => m.toHumanReadableString) shouldBe Right(
       """####################
         |#   # ### # #   #  #

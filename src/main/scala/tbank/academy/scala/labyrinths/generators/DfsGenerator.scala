@@ -13,7 +13,7 @@ class DfsGenerator(seed: Int) extends Generator {
     if (width < 3 || height < 3) {
       Left(new InvalidMazeSizeError())
     } else {
-      val initMaze = Maze.filledWithWalls(width, height)
+      val initMaze  = Maze.filledWithWalls(width, height)
       val initPoint = Point(1, 1)
 
       Right(dfsBuild(initMaze, initPoint))
@@ -35,7 +35,7 @@ class DfsGenerator(seed: Int) extends Generator {
       .filter(p => maze.nearbyCells(p).count(cellType => cellType == CellType.Empty) == 1)
 
     random.shuffle(nearbyWalls).headOption match {
-      case None => maze
+      case None            => maze
       case Some(nextPoint) =>
         val postDfsMaze = dfsBuild(maze, nextPoint)
         iterateNearbyWalls(postDfsMaze, point)

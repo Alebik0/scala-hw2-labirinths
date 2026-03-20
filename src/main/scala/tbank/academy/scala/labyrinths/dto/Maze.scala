@@ -7,7 +7,7 @@ case class Maze(cells: Vector[Vector[CellType]]) {
 
   def width: Int = cells.headOption match {
     case Some(value) => value.length
-    case None => 0
+    case None        => 0
   }
 
   private def contains(point: Point): Boolean =
@@ -22,7 +22,7 @@ case class Maze(cells: Vector[Vector[CellType]]) {
         0 == point.x ||
         point.y == cells.length - 1 ||
         point.x == cells(point.y).length - 1
-      )
+    )
 
   def isNotBorder(point: Point): Boolean = !isBorder(point)
 
@@ -47,35 +47,33 @@ case class Maze(cells: Vector[Vector[CellType]]) {
     Maze(
       cells
         .zipWithIndex
-        .map(
-          rowWithIndex =>
-            if (rowWithIndex._2 == point.y)
-              rowWithIndex
-                ._1
-                .zipWithIndex
-                .map(
-                  colWithIndex =>
-                    if (colWithIndex._2 == point.x)
-                      cellType
-                    else
-                      colWithIndex._1
-                )
-            else
-              rowWithIndex._1
+        .map(rowWithIndex =>
+          if (rowWithIndex._2 == point.y)
+            rowWithIndex
+              ._1
+              .zipWithIndex
+              .map(colWithIndex =>
+                if (colWithIndex._2 == point.x)
+                  cellType
+                else
+                  colWithIndex._1
+              )
+          else
+            rowWithIndex._1
         )
     )
 
   def toHumanReadableString: String =
     cells
-      .map(
-        row => row
+      .map(row =>
+        row
           .map {
             case CellType.Empty => " "
-            case CellType.End => "X"
-            case CellType.Path => "."
+            case CellType.End   => "X"
+            case CellType.Path  => "."
             case CellType.Start => "O"
-            case CellType.Wall => "#"
-            case _ => ""
+            case CellType.Wall  => "#"
+            case _              => ""
           }
           .mkString
       )
