@@ -1,7 +1,6 @@
 package tbank.academy.scala.labyrinths
 
 import cats.effect.{ExitCode, IO, IOApp}
-import tbank.academy.scala.labyrinths.dto.Maze
 import tbank.academy.scala.labyrinths.error.{DomainError, HeightNotFoundError, WidthNotFoundError}
 import tbank.academy.scala.labyrinths.generators.{DfsGenerator, Generator, PrimGenerator}
 
@@ -11,17 +10,22 @@ object App extends IOApp {
   private def DEFAULT_GENERATOR(seed: Int) = new DfsGenerator(seed)
 
   override def run(args: List[String]): IO[ExitCode] = {
-    args.headOption match {
-      case None =>
-        printHelp()
-        IO(ExitCode.Error)
-      case Some("solve") =>
-        runSolve()
-      case Some("generate") =>
-        runGenerate(args)
-      case Some(_) =>
-        printHelp()
-        IO(ExitCode.Error)
+    if (parseHelp(args)) {
+      printHelp()
+      IO(ExitCode.Success)
+    } else {
+      args.headOption match {
+        case None =>
+          printHelp()
+          IO(ExitCode.Error)
+        case Some("solve") =>
+          runSolve()
+        case Some("generate") =>
+          runGenerate(args)
+        case Some(_) =>
+          printHelp()
+          IO(ExitCode.Error)
+      }
     }
   }
 
@@ -47,17 +51,15 @@ object App extends IOApp {
                 println(s"Error occurred: $error")
                 IO(ExitCode.Error)
               case Right(maze) =>
-                printMaze(maze)
+                println(maze.toHumanReadableString)
+                IO(ExitCode.Success)
             }
         }
     }
   }
 
-  private def printMaze(maze: Maze): IO[ExitCode] = {
-    println(maze.toHumanReadableString)
-
-    IO(ExitCode.Success)
-  }
+  private def parseHelp(args: List[String]): Boolean =
+    args == List("--help") || args == List("-h")
 
   private def parseWidth(args: List[String]): Either[DomainError, Int] = {
     val maybeWidth = args
@@ -97,13 +99,55 @@ object App extends IOApp {
       .flatMap(
         arg => arg.drop(12) match {
           case "dfs" => Some(new DfsGenerator(seed))
-          case "prime" => Some(new PrimGenerator(seed))
+          case "prim" => Some(new PrimGenerator(seed))
           case _ => None
         }
       )
       .getOrElse(DEFAULT_GENERATOR(seed))
 
-  private def printHelp() = {
-    println("TODO")
+  private def printHelp(): Unit = {
+    println(
+      """Usage:
+        |  <COMMAND> --width=<WIDTH> --height=<HEIGHT> [--algorithm=<ALGORITHM>] [--seed=<SEED>]
+        |
+        |Description:
+        |  Executes maze generator or solver (based on <COMMAND> value)
+        |
+        |  <COMMAND> must be one of:
+        |    generate    Generate maze
+        |    solve       Find shortest path in the provided maze
+        |
+        |Required Arguments:
+        |  <COMMAND>
+        |      The operation to perform. Must be either "generate" or "solve".
+        |
+        |  --width=<WIDTH>
+        |      The width of the output. Must be a positive integer.
+        |
+        |  --height=<HEIGHT>
+        |      The height of the output. Must be a positive integer.
+        |
+        |Optional Arguments:
+        |  --algorithm=<ALGORITHM>
+        |      The generator to use.
+        |      Default: dfs
+        |      Options may include: dfs, prim
+        |
+        |  --seed=<SEED>
+        |      Seed value for randomization.
+        |      Default: 123
+        |
+        |  -h, --help
+        |      Show this help message and exit.
+        |
+        |Examples:
+        |  generate --width 50 --height 20
+        |
+        |  generate --width 50 --height 20 --algorithm dfs
+        |
+        |  generate --width 50 --height 20 --seed 999
+        |
+        |  generate --width 50 --height 20 --algorithm prim --seed 42""".stripMargin
+    )
   }
 }
