@@ -1,1 +1,1 @@
-solve --algorithm=astar --file=/tests/cases/4_check_maze_solving/maze.txt --start=1,1 --end=9,9
+solve --algorithm=astar --file=/tests/cases/4_check_maze_solving/maze.txt --start=2,2 --end=10,10

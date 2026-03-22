@@ -1,8 +1,9 @@
 package tbank.academy.scala.labyrinths
 
 import cats.effect.{ExitCode, IO, IOApp}
-import tbank.academy.scala.labyrinths.dto.{CellType, Maze}
+import tbank.academy.scala.labyrinths.dto.{CellType, Maze, Path, Point}
 import tbank.academy.scala.labyrinths.error.DomainError
+import tbank.academy.scala.labyrinths.parsers.{GeneratorParser, Parser, SolverParser}
 
 import java.io.File
 import java.nio.file.Files
@@ -30,29 +31,32 @@ object App extends IOApp {
   }
 
   private def runSolve(args: List[String]): IO[ExitCode] =
-    Parser.parseAlgorithm(args) match {
+    SolverParser.parseAlgorithm(args) match {
       case Left(error) => raiseError(error)
       case Right(solver) =>
-        Parser.parseMazeFile(args) match {
+        SolverParser.parseMazeFile(args) match {
           case Left(error) => raiseError(error)
           case Right(mazeFile) =>
             val maze = readMaze(mazeFile)
 
-            Parser.parseStart(args) match {
+            SolverParser.parseStart(args) match {
               case Left(error) => raiseError(error)
               case Right(startPoint) =>
-                Parser.parseEnd(args) match {
+                SolverParser.parseEnd(args) match {
                   case Left(error) => raiseError(error)
                   case Right(endPoint) =>
-                    Parser.parseOutput(args) match {
+                    SolverParser.parseOutput(args) match {
                       case Left(error) => raiseError(error)
                       case Right(output) =>
                         solver.solve(maze, startPoint, endPoint) match {
                           case None =>
                             output.write("No path found".getBytes)
+                            output.close()
                             IO(ExitCode.Success)
                           case Some(path) =>
-                            output.write(path.points.map(p => s"${p.x},${p.y}").mkString("\n").getBytes)
+                            val outputMaze = updateMaze(maze, path, startPoint, endPoint)
+                            output.write(outputMaze.toHumanReadableString.getBytes)
+                            output.close()
                             IO(ExitCode.Success)
                         }
                     }
@@ -60,6 +64,34 @@ object App extends IOApp {
             }
         }
     }
+
+  private def updateMaze(maze: Maze, path: Path, start: Point, end: Point): Maze =
+    Maze(
+      maze
+        .cells
+        .zipWithIndex
+        .map(
+          rowWithIndex =>
+            rowWithIndex
+              ._1
+              .zipWithIndex
+              .map(
+                columnWithIndex => {
+                  val current = Point(columnWithIndex._2, rowWithIndex._2)
+
+                  if (current == start)
+                    CellType.Start
+                  else if (current == end)
+                    CellType.End
+                  else if (path.points.contains(current))
+                    CellType.Path
+                  else
+                    columnWithIndex._1
+                }
+
+              )
+        )
+    )
 
   private def cellTypeFromChar(char: Char): CellType =
     char match {
@@ -92,13 +124,13 @@ object App extends IOApp {
   }
 
   private def runGenerate(args: List[String]): IO[ExitCode] = {
-    val seed = Parser.parseSeed(args)
-    val generator = Parser.parseGenerator(seed, args)
-    Parser.parseWidth(args) match {
+    val seed = GeneratorParser.parseSeed(args)
+    val generator = GeneratorParser.parseGenerator(seed, args)
+    GeneratorParser.parseWidth(args) match {
       case Left(error) =>
         raiseError(error)
       case Right(width) =>
-        Parser.parseHeight(args) match {
+        GeneratorParser.parseHeight(args) match {
           case Left(error) =>
             raiseError(error)
           case Right(height) =>
