@@ -4,7 +4,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
-class DfsGeneratorTest extends AnyFlatSpec with Matchers {
+class GeneratorTest extends AnyFlatSpec with Matchers {
   it should "Проверка генерации с алгоритмом DFS" in {
     val generator = new DfsGenerator(1234)
     val result    = generator.generate(20, 20)
