@@ -4,7 +4,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import tbank.academy.scala.labyrinths.dto.Point
-import tbank.academy.scala.labyrinths.solvers.AstarSolver
+import tbank.academy.scala.labyrinths.solvers.DijkstraSolver
 
 import java.io.File
 
@@ -18,7 +18,7 @@ class SolverParserTest extends AnyFlatSpec with Matchers {
       case Left(_) =>
         fail()
       case Right(value) =>
-        value shouldBe a [AstarSolver]
+        value shouldBe a [DijkstraSolver]
     }
   }
 

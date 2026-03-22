@@ -2,7 +2,7 @@ package tbank.academy.scala.labyrinths.parsers
 
 import tbank.academy.scala.labyrinths.dto.Point
 import tbank.academy.scala.labyrinths.error.{ArgumentNotFoundError, DomainError, InvalidArgumentError}
-import tbank.academy.scala.labyrinths.solvers.{AstarSolver, Solver}
+import tbank.academy.scala.labyrinths.solvers.{AstarSolver, DijkstraSolver, Solver}
 
 import java.io.{File, FileOutputStream, OutputStream}
 
@@ -16,6 +16,7 @@ object SolverParser {
 
     value match {
       case Some("astar") => Right(new AstarSolver())
+      case Some("dijkstra") => Right(new DijkstraSolver())
       case Some(_) => Left(InvalidArgumentError("algorithm"))
       case None => Left(ArgumentNotFoundError("algorithm"))
     }
