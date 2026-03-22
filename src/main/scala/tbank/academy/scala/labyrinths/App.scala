@@ -1,16 +1,17 @@
 package tbank.academy.scala.labyrinths
 
 import cats.effect.{ExitCode, IO, IOApp}
-import tbank.academy.scala.labyrinths.error.{DomainError, HeightNotFoundError, WidthNotFoundError}
-import tbank.academy.scala.labyrinths.generators.{DfsGenerator, Generator, PrimGenerator}
+import tbank.academy.scala.labyrinths.dto.{CellType, Maze}
+import tbank.academy.scala.labyrinths.error.DomainError
+
+import java.io.File
+import java.nio.file.Files
+import scala.jdk.CollectionConverters.ListHasAsScala
 
 object App extends IOApp {
-  private val DEFAULT_SEED = 123
-
-  private def DEFAULT_GENERATOR(seed: Int) = new DfsGenerator(seed)
 
   override def run(args: List[String]): IO[ExitCode] = {
-    if (parseHelp(args)) {
+    if (Parser.parseHelp(args)) {
       printHelp()
       IO(ExitCode.Success)
     } else
@@ -19,7 +20,7 @@ object App extends IOApp {
           printHelp()
           IO(ExitCode.Error)
         case Some("solve") =>
-          runSolve()
+          runSolve(args)
         case Some("generate") =>
           runGenerate(args)
         case Some(_) =>
@@ -28,28 +29,82 @@ object App extends IOApp {
       }
   }
 
-  private def runSolve(): IO[ExitCode] = {
-    // TODO
-    IO(ExitCode.Success)
+  private def runSolve(args: List[String]): IO[ExitCode] =
+    Parser.parseAlgorithm(args) match {
+      case Left(error) => raiseError(error)
+      case Right(solver) =>
+        Parser.parseMazeFile(args) match {
+          case Left(error) => raiseError(error)
+          case Right(mazeFile) =>
+            val maze = readMaze(mazeFile)
+
+            Parser.parseStart(args) match {
+              case Left(error) => raiseError(error)
+              case Right(startPoint) =>
+                Parser.parseEnd(args) match {
+                  case Left(error) => raiseError(error)
+                  case Right(endPoint) =>
+                    Parser.parseOutput(args) match {
+                      case Left(error) => raiseError(error)
+                      case Right(output) =>
+                        solver.solve(maze, startPoint, endPoint) match {
+                          case None =>
+                            output.write("No path found".getBytes)
+                            IO(ExitCode.Success)
+                          case Some(path) =>
+                            output.write(path.points.map(p => s"${p.x},${p.y}").mkString("\n").getBytes)
+                            IO(ExitCode.Success)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+  private def cellTypeFromChar(char: Char): CellType =
+    char match {
+      case '#' => CellType.Wall
+      case '.' => CellType.Path
+      case ' ' => CellType.Empty
+      case 'X' => CellType.End
+      case 'O' => CellType.Start
+      case _ => CellType.Wall
+    }
+
+  private def readMaze(mazeFile: File): Maze =
+    Maze(
+      Files
+        .readAllLines(mazeFile.toPath)
+        .asScala
+        .map(
+          line =>
+            line
+              .toList
+              .map(cellTypeFromChar)
+              .toVector
+        )
+        .toVector
+    )
+
+  private def raiseError(error: DomainError) = {
+    println(s"Error occurred: $error")
+    IO(ExitCode.Error)
   }
 
   private def runGenerate(args: List[String]): IO[ExitCode] = {
-    val seed      = parseSeed(args)
-    val generator = parseGenerator(seed, args)
-    parseWidth(args) match {
+    val seed = Parser.parseSeed(args)
+    val generator = Parser.parseGenerator(seed, args)
+    Parser.parseWidth(args) match {
       case Left(error) =>
-        println(s"Error occurred: $error")
-        IO(ExitCode.Error)
+        raiseError(error)
       case Right(width) =>
-        parseHeight(args) match {
+        Parser.parseHeight(args) match {
           case Left(error) =>
-            println(s"Error occurred: $error")
-            IO(ExitCode.Error)
+            raiseError(error)
           case Right(height) =>
             generator.generate(width, height) match {
               case Left(error) =>
-                println(s"Error occurred: $error")
-                IO(ExitCode.Error)
+                raiseError(error)
               case Right(maze) =>
                 println(maze.toHumanReadableString)
                 IO(ExitCode.Success)
@@ -57,53 +112,6 @@ object App extends IOApp {
         }
     }
   }
-
-  private def parseHelp(args: List[String]): Boolean =
-    args == List("--help") || args == List("-h")
-
-  private def parseWidth(args: List[String]): Either[DomainError, Int] = {
-    val maybeWidth = args
-      .drop(1)
-      .findLast(arg => arg.startsWith("--width="))
-      .flatMap(arg => arg.drop(8).toIntOption)
-
-    maybeWidth match {
-      case Some(width) => Right(width)
-      case None        => Left(new WidthNotFoundError())
-    }
-  }
-
-  private def parseHeight(args: List[String]): Either[DomainError, Int] = {
-    val maybeHeight = args
-      .drop(1)
-      .findLast(arg => arg.startsWith("--height="))
-      .flatMap(arg => arg.drop(9).toIntOption)
-
-    maybeHeight match {
-      case Some(height) => Right(height)
-      case None         => Left(new HeightNotFoundError())
-    }
-  }
-
-  private def parseSeed(args: List[String]): Int =
-    args
-      .drop(1)
-      .findLast(arg => arg.startsWith("--seed="))
-      .flatMap(arg => arg.drop(7).toIntOption)
-      .getOrElse(DEFAULT_SEED)
-
-  private def parseGenerator(seed: Int, args: List[String]): Generator =
-    args
-      .drop(1)
-      .findLast(arg => arg.startsWith("--algorithm="))
-      .flatMap(arg =>
-        arg.drop(12) match {
-          case "dfs"  => Some(new DfsGenerator(seed))
-          case "prim" => Some(new PrimGenerator(seed))
-          case _      => None
-        }
-      )
-      .getOrElse(DEFAULT_GENERATOR(seed))
 
   private def printHelp(): Unit =
     println(
