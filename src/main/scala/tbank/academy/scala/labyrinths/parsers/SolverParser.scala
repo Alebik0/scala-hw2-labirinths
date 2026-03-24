@@ -9,16 +9,16 @@ import java.io.{File, FileOutputStream, OutputStream}
 object SolverParser {
   def parseAlgorithm(args: List[String]): Either[DomainError, Solver] = {
     val prefix = "--algorithm="
-    val value = args
+    val value  = args
       .drop(1)
       .findLast(arg => arg.startsWith(prefix))
       .map(arg => arg.drop(prefix.length))
 
     value match {
-      case Some("astar") => Right(new AstarSolver())
+      case Some("astar")    => Right(new AstarSolver())
       case Some("dijkstra") => Right(new DijkstraSolver())
-      case Some(_) => Left(InvalidArgumentError("algorithm"))
-      case None => Left(ArgumentNotFoundError("algorithm"))
+      case Some(_)          => Left(InvalidArgumentError("algorithm"))
+      case None             => Left(ArgumentNotFoundError("algorithm"))
     }
   }
 
@@ -38,9 +38,9 @@ object SolverParser {
   }
 
   def parseStart(args: List[String]): Either[DomainError, Point] = {
-    val prefix = "--start="
+    val prefix     = "--start="
     val pointRegex = "^(\\d+),(\\d+)$".r
-    val parsed = args
+    val parsed     = args
       .drop(1)
       .findLast(arg => arg.startsWith(prefix))
       .map(arg => arg.drop(prefix.length))
@@ -49,14 +49,14 @@ object SolverParser {
 
     parsed match {
       case Some(value) => Right(value)
-      case None => Left(ArgumentNotFoundError("start"))
+      case None        => Left(ArgumentNotFoundError("start"))
     }
   }
 
   def parseEnd(args: List[String]): Either[DomainError, Point] = {
-    val prefix = "--end="
+    val prefix     = "--end="
     val pointRegex = "^(\\d+),(\\d+)$".r
-    val parsed = args
+    val parsed     = args
       .drop(1)
       .findLast(arg => arg.startsWith(prefix))
       .map(arg => arg.drop(prefix.length))
@@ -65,7 +65,7 @@ object SolverParser {
 
     parsed match {
       case Some(value) => Right(value)
-      case None => Left(ArgumentNotFoundError("end"))
+      case None        => Left(ArgumentNotFoundError("end"))
     }
   }
 
@@ -79,7 +79,7 @@ object SolverParser {
 
     parsed match {
       case Some(value) => Right(value)
-      case None => Right(System.out)
+      case None        => Right(System.out)
     }
   }
 }

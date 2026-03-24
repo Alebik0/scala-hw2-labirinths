@@ -32,21 +32,21 @@ object App extends IOApp {
 
   private def runSolve(args: List[String]): IO[ExitCode] =
     SolverParser.parseAlgorithm(args) match {
-      case Left(error) => raiseError(error)
+      case Left(error)   => raiseError(error)
       case Right(solver) =>
         SolverParser.parseMazeFile(args) match {
-          case Left(error) => raiseError(error)
+          case Left(error)     => raiseError(error)
           case Right(mazeFile) =>
             val maze = readMaze(mazeFile)
 
             SolverParser.parseStart(args) match {
-              case Left(error) => raiseError(error)
+              case Left(error)       => raiseError(error)
               case Right(startPoint) =>
                 SolverParser.parseEnd(args) match {
-                  case Left(error) => raiseError(error)
+                  case Left(error)     => raiseError(error)
                   case Right(endPoint) =>
                     SolverParser.parseOutput(args) match {
-                      case Left(error) => raiseError(error)
+                      case Left(error)   => raiseError(error)
                       case Right(output) =>
                         solver.solve(maze, startPoint, endPoint) match {
                           case None =>
@@ -70,26 +70,22 @@ object App extends IOApp {
       maze
         .cells
         .zipWithIndex
-        .map(
-          rowWithIndex =>
-            rowWithIndex
-              ._1
-              .zipWithIndex
-              .map(
-                columnWithIndex => {
-                  val current = Point(columnWithIndex._2, rowWithIndex._2)
+        .map(rowWithIndex =>
+          rowWithIndex
+            ._1
+            .zipWithIndex
+            .map(columnWithIndex => {
+              val current = Point(columnWithIndex._2, rowWithIndex._2)
 
-                  if (current == start)
-                    CellType.Start
-                  else if (current == end)
-                    CellType.End
-                  else if (path.points.contains(current))
-                    CellType.Path
-                  else
-                    columnWithIndex._1
-                }
-
-              )
+              if (current == start)
+                CellType.Start
+              else if (current == end)
+                CellType.End
+              else if (path.points.contains(current))
+                CellType.Path
+              else
+                columnWithIndex._1
+            })
         )
     )
 
@@ -100,7 +96,7 @@ object App extends IOApp {
       case ' ' => CellType.Empty
       case 'X' => CellType.End
       case 'O' => CellType.Start
-      case _ => CellType.Wall
+      case _   => CellType.Wall
     }
 
   private def readMaze(mazeFile: File): Maze =
@@ -108,12 +104,11 @@ object App extends IOApp {
       Files
         .readAllLines(mazeFile.toPath)
         .asScala
-        .map(
-          line =>
-            line
-              .toList
-              .map(cellTypeFromChar)
-              .toVector
+        .map(line =>
+          line
+            .toList
+            .map(cellTypeFromChar)
+            .toVector
         )
         .toVector
     )
@@ -124,7 +119,7 @@ object App extends IOApp {
   }
 
   private def runGenerate(args: List[String]): IO[ExitCode] = {
-    val seed = GeneratorParser.parseSeed(args)
+    val seed      = GeneratorParser.parseSeed(args)
     val generator = GeneratorParser.parseGenerator(seed, args)
     GeneratorParser.parseWidth(args) match {
       case Left(error) =>

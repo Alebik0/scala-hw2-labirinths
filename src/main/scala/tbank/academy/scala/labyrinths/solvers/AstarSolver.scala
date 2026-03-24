@@ -18,7 +18,7 @@ class AstarSolver extends Solver {
 
   override def solve(maze: Maze, start: Point, end: Point): Option[Path] = {
     val visitedPoints = List[Point]()
-    val queuedPoints = List(AstarState(start, end, start, None, 0))
+    val queuedPoints  = List(AstarState(start, end, start, None, 0))
 
     iterativeSolve(maze, visitedPoints, queuedPoints)
   }
@@ -34,7 +34,7 @@ class AstarSolver extends Solver {
         Some(buildPath(currentState))
       else {
         val newVisitedPoints = visitedPoints :+ currentState.current
-        val nextStates = maze
+        val nextStates       = maze
           .nearby(currentState.current)
           .filter(point => maze.cell(point) == Right(CellType.Empty))
           .filterNot(visitedPoints.contains)
@@ -50,7 +50,7 @@ class AstarSolver extends Solver {
 
   private def buildPath(currentState: AstarState): Path =
     currentState.previous match {
-      case None => Path(List(currentState.current))
+      case None       => Path(List(currentState.current))
       case Some(prev) => Path(buildPath(prev).points :+ currentState.current)
     }
 }

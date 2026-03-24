@@ -9,16 +9,17 @@ import tbank.academy.scala.labyrinths.solvers.DijkstraSolver
 import java.io.File
 
 class SolverParserTest extends AnyFlatSpec with Matchers {
-  private val BASE_ARGS = "solve --algorithm=astar --file=/tests/cases/4_check_maze_solving/maze.txt --start=2,2 --end=10,10"
-    .split(" ")
-    .toList
+  private val BASE_ARGS =
+    "solve --algorithm=astar --file=/tests/cases/4_check_maze_solving/maze.txt --start=2,2 --end=10,10"
+      .split(" ")
+      .toList
 
   it should "Проверка валидного parseAlgorithm" in {
     SolverParser.parseAlgorithm(BASE_ARGS) match {
       case Left(_) =>
         fail()
       case Right(value) =>
-        value shouldBe a [DijkstraSolver]
+        value shouldBe a[DijkstraSolver]
     }
   }
 

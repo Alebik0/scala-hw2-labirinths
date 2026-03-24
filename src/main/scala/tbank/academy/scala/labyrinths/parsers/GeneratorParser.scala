@@ -16,7 +16,7 @@ object GeneratorParser {
 
     maybeWidth match {
       case Some(width) => Right(width)
-      case None => Left(ArgumentNotFoundError("width"))
+      case None        => Left(ArgumentNotFoundError("width"))
     }
   }
 
@@ -28,7 +28,7 @@ object GeneratorParser {
 
     maybeHeight match {
       case Some(height) => Right(height)
-      case None => Left(ArgumentNotFoundError("height"))
+      case None         => Left(ArgumentNotFoundError("height"))
     }
   }
 
@@ -45,9 +45,9 @@ object GeneratorParser {
       .findLast(arg => arg.startsWith("--algorithm="))
       .flatMap(arg =>
         arg.drop(12) match {
-          case "dfs" => Some(new DfsGenerator(seed))
+          case "dfs"  => Some(new DfsGenerator(seed))
           case "prim" => Some(new PrimGenerator(seed))
-          case _ => None
+          case _      => None
         }
       )
       .getOrElse(DEFAULT_GENERATOR(seed))

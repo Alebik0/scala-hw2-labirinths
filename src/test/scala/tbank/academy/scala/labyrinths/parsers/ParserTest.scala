@@ -14,6 +14,8 @@ class ParserTest extends AnyFlatSpec with Matchers {
   }
 
   it should "Проверка стандартного вызова команд" in {
-    Parser.parseHelp(List("solve --algorithm=astar --file=/tests/cases/4_check_maze_solving/maze.txt --start=2,2 --end=10,10")) shouldBe false
+    Parser.parseHelp(
+      List("solve --algorithm=astar --file=/tests/cases/4_check_maze_solving/maze.txt --start=2,2 --end=10,10")
+    ) shouldBe false
   }
 }
