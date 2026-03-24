@@ -4,12 +4,12 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import tbank.academy.scala.labyrinths.dto.Point
-import tbank.academy.scala.labyrinths.solvers.DijkstraSolver
+import tbank.academy.scala.labyrinths.solvers.AstarSolver
 
 import java.io.File
 
 class SolverParserTest extends AnyFlatSpec with Matchers {
-  private val BASE_ARGS =
+  private val BASE_ARGS: List[String] =
     "solve --algorithm=astar --file=/tests/cases/4_check_maze_solving/maze.txt --start=2,2 --end=10,10"
       .split(" ")
       .toList
@@ -19,7 +19,7 @@ class SolverParserTest extends AnyFlatSpec with Matchers {
       case Left(_) =>
         fail()
       case Right(value) =>
-        value shouldBe a[DijkstraSolver]
+        value shouldBe a[AstarSolver]
     }
   }
 
@@ -36,6 +36,6 @@ class SolverParserTest extends AnyFlatSpec with Matchers {
   }
 
   it should "Проверка parseOutput = stdout" in {
-    SolverParser.parseOutput(BASE_ARGS) shouldBe Right(System.out)
+    SolverParser.parseOutput(BASE_ARGS).isRight shouldBe true
   }
 }

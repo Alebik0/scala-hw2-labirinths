@@ -79,7 +79,7 @@ object SolverParser {
 
     parsed match {
       case Some(value) => Right(value)
-      case None        => Right(System.out)
+      case None        => Right((i: Int) => print(i.toChar))
     }
   }
 }

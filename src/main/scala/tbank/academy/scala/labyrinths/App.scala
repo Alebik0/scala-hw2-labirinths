@@ -113,7 +113,7 @@ object App extends IOApp {
         .toVector
     )
 
-  private def raiseError(error: DomainError) = {
+  private def raiseError(error: DomainError): IO[ExitCode] = {
     println(s"Error occurred: $error")
     IO(ExitCode.Error)
   }

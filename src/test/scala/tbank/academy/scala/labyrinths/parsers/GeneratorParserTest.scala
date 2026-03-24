@@ -6,7 +6,7 @@ import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import tbank.academy.scala.labyrinths.generators.DfsGenerator
 
 class GeneratorParserTest extends AnyFlatSpec with Matchers {
-  private val BASE_ARGS = "generate --width=20 --height=20 --seed=1234 --algorithm=dfs"
+  private val BASE_ARGS: List[String] = "generate --width=20 --height=20 --seed=1234 --algorithm=dfs"
     .split(" ")
     .toList
 
