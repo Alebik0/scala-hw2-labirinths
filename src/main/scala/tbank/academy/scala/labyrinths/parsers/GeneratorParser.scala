@@ -36,7 +36,7 @@ object GeneratorParser {
           Left(ArgumentNotFoundError("height"))
         else
           Right(height)
-      case None         => Left(ArgumentNotFoundError("height"))
+      case None => Left(ArgumentNotFoundError("height"))
     }
   }
 
