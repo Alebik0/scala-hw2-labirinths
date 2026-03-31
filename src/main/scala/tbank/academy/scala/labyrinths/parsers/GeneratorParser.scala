@@ -15,8 +15,12 @@ object GeneratorParser {
       .flatMap(arg => arg.drop(8).toIntOption)
 
     maybeWidth match {
-      case Some(width) => Right(width)
-      case None        => Left(ArgumentNotFoundError("width"))
+      case Some(width) =>
+        if (width < 3)
+          Left(ArgumentNotFoundError("width"))
+        else
+          Right(width)
+      case None => Left(ArgumentNotFoundError("width"))
     }
   }
 
@@ -27,7 +31,11 @@ object GeneratorParser {
       .flatMap(arg => arg.drop(9).toIntOption)
 
     maybeHeight match {
-      case Some(height) => Right(height)
+      case Some(height) =>
+        if (height < 3)
+          Left(ArgumentNotFoundError("height"))
+        else
+          Right(height)
       case None         => Left(ArgumentNotFoundError("height"))
     }
   }

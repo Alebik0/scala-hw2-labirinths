@@ -2,12 +2,13 @@ package tbank.academy.scala.labyrinths
 
 import cats.effect.{ExitCode, IO, IOApp}
 import tbank.academy.scala.labyrinths.dto.{CellType, Maze, Path, Point}
-import tbank.academy.scala.labyrinths.error.DomainError
+import tbank.academy.scala.labyrinths.error.{DomainError, InputFileReadError}
 import tbank.academy.scala.labyrinths.parsers.{GeneratorParser, Parser, SolverParser}
 
 import java.io.File
 import java.nio.file.Files
 import scala.jdk.CollectionConverters.ListHasAsScala
+import scala.util.{Failure, Success, Try}
 
 object App extends IOApp {
 
@@ -37,27 +38,29 @@ object App extends IOApp {
         SolverParser.parseMazeFile(args) match {
           case Left(error)     => raiseError(error)
           case Right(mazeFile) =>
-            val maze = readMaze(mazeFile)
-
-            SolverParser.parseStart(args) match {
-              case Left(error)       => raiseError(error)
-              case Right(startPoint) =>
-                SolverParser.parseEnd(args) match {
-                  case Left(error)     => raiseError(error)
-                  case Right(endPoint) =>
-                    SolverParser.parseOutput(args) match {
-                      case Left(error)   => raiseError(error)
-                      case Right(output) =>
-                        solver.solve(maze, startPoint, endPoint) match {
-                          case None =>
-                            output.write("No path found".getBytes)
-                            output.close()
-                            IO(ExitCode.Success)
-                          case Some(path) =>
-                            val outputMaze = updateMaze(maze, path, startPoint, endPoint)
-                            output.write(outputMaze.toHumanReadableString.getBytes)
-                            output.close()
-                            IO(ExitCode.Success)
+            readMaze(mazeFile) match {
+              case Left(error) => raiseError(error)
+              case Right(maze) =>
+                SolverParser.parseStart(args) match {
+                  case Left(error)       => raiseError(error)
+                  case Right(startPoint) =>
+                    SolverParser.parseEnd(args) match {
+                      case Left(error)     => raiseError(error)
+                      case Right(endPoint) =>
+                        SolverParser.parseOutput(args) match {
+                          case Left(error)   => raiseError(error)
+                          case Right(output) =>
+                            solver.solve(maze, startPoint, endPoint) match {
+                              case None =>
+                                output.write("No path found".getBytes)
+                                output.close()
+                                IO(ExitCode.Success)
+                              case Some(path) =>
+                                val outputMaze = updateMaze(maze, path, startPoint, endPoint)
+                                output.write(outputMaze.toHumanReadableString.getBytes)
+                                output.close()
+                                IO(ExitCode.Success)
+                            }
                         }
                     }
                 }
@@ -99,19 +102,24 @@ object App extends IOApp {
       case _   => CellType.Wall
     }
 
-  private def readMaze(mazeFile: File): Maze =
-    Maze(
-      Files
-        .readAllLines(mazeFile.toPath)
-        .asScala
-        .map(line =>
-          line
-            .toList
-            .map(cellTypeFromChar)
+  private def readMaze(mazeFile: File): Either[DomainError, Maze] = {
+    Try(Files.readAllLines(mazeFile.toPath)) match {
+      case Failure(exception) =>
+        Left(InputFileReadError(exception.toString))
+      case Success(fileLines) =>
+        Right(Maze(
+          fileLines
+            .asScala
+            .map(line =>
+              line
+                .toList
+                .map(cellTypeFromChar)
+                .toVector
+            )
             .toVector
-        )
-        .toVector
-    )
+        ))
+    }
+  }
 
   private def raiseError(error: DomainError): IO[ExitCode] = {
     println(s"Error occurred: $error")
@@ -156,6 +164,7 @@ object App extends IOApp {
         |  <COMMAND>
         |      The operation to perform. Must be either "generate" or "solve".
         |
+        |Generator Arguments:
         |  --width=<WIDTH>
         |      The width of the output. Must be a positive integer.
         |
@@ -175,6 +184,23 @@ object App extends IOApp {
         |  -h, --help
         |      Show this help message and exit.
         |
+        |Solver arguments
+        |  --algorithm=<ALGORITHM>
+        |      Algorithm to find path. "astar" or "dijkstra"
+        |
+        |  --file=<FILE>
+        |      Maze input file.
+        |
+        |  --start=<START>
+        |      Start point. Format: "x,y".
+        |
+        |  --end=<END>
+        |      End point. Format: "x,y".
+        |
+        |Optional Arguments:
+        |  --output=<OUTPUT>
+        |      Output file. Solver will write to the stdout if not provided.
+        |
         |Examples:
         |  generate --width 50 --height 20
         |
@@ -182,6 +208,9 @@ object App extends IOApp {
         |
         |  generate --width 50 --height 20 --seed 999
         |
-        |  generate --width 50 --height 20 --algorithm prim --seed 42""".stripMargin
+        |  generate --width 50 --height 20 --algorithm prim --seed 42
+        |
+        |  solve --algorithm=astar --file=/tests/cases/4_check_maze_solving/maze.txt --start=2,2 --end=10,10
+        |  """.stripMargin
     )
 }
